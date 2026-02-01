@@ -32,6 +32,12 @@ pub struct MutationRoot<P, U> {
     phantom_user_repository: PhantomData<U>,
 }
 
+impl<P, U> Default for MutationRoot<P, U> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<P, U> MutationRoot<P, U> {
     pub fn new() -> Self {
         Self {
