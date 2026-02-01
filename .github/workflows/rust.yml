@@ -32,7 +32,7 @@ jobs:
       run: cargo clippy --all-targets --all-features -- -D warnings
 
   deploy:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     needs:
       - lint
       - build
