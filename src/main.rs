@@ -13,7 +13,7 @@ use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
 
 async fn graphiql() -> impl IntoResponse {
-    response::Html(GraphiQLSource::build().endpoint("/").finish())
+    response::Html(GraphiQLSource::build().endpoint("/api").finish())
 }
 
 #[tokio::main]
