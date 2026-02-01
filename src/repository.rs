@@ -14,7 +14,7 @@ impl PostgresUserRepository {
 impl UserRepository for PostgresUserRepository {
     async fn create_user(&self, username: &str, hashed_password: &str) -> Result<i64, ()> {
         let result = sqlx::query!(
-            "INSERT INTO users (username, hashed_password) VALUES ($1, $2) RETURNING id",
+            "insert into users (username, password_hash) values ($1, $2) returning id",
             username,
             hashed_password
         )

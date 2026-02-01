@@ -1,3 +1,5 @@
+use std::env;
+
 use async_graphql::{EmptySubscription, Schema, http::GraphiQLSource};
 use async_graphql_axum::GraphQL;
 use axum::{Router, response::{self, IntoResponse}, routing::get};
@@ -16,11 +18,13 @@ async fn graphiql() -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() {
+    let connection_string = env::var("DATABASE_URL").expect("DATABASE_URL was not provided");
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect("postgres://postgres:password@localhost:5432/postgres")
+        .connect(&connection_string)
         .await
         .expect("failed to connect to postgres");
+    sqlx::migrate!("./migrations").run(&pool).await.expect("Migrations failed");
     let hasher = Argon2PasswordHasher::new();
     let user_repository = PostgresUserRepository::new(pool);
     let registration_usecase = RegistrationUsecase::new(hasher, user_repository);
@@ -35,7 +39,7 @@ async fn main() {
 
     let app = Router::new().route("/", get(graphiql).post_service(GraphQL::new(schema)));
 
-    axum::serve(TcpListener::bind("127.0.0.1:8000").await.unwrap(), app)
+    axum::serve(TcpListener::bind("0.0.0.0:8000").await.unwrap(), app)
         .await
         .unwrap();
 }

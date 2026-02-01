@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO users (username, hashed_password) VALUES ($1, $2) RETURNING id",
+  "query": "insert into users (username, password_hash) values ($1, $2) returning id",
   "describe": {
     "columns": [
       {
@@ -19,5 +19,5 @@
       false
     ]
   },
-  "hash": "883471a008a64f96c820ed3860903820d13e62780a6343bb41d210f2270fceb8"
+  "hash": "d226909072dbce2f000f45775c3290a59fd0ed082e8a650d69af1f56cad61476"
 }

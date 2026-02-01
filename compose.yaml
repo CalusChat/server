@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    environment:
+      - DATABASE_URL=postgres://postgres@db:5432/postgres
+    ports:
+      - "127.0.0.1:1337:8000"
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - data:/var/lib/postgresql/data
+
+volumes:
+  data:
