@@ -37,7 +37,7 @@ async fn main() {
     .data(context)
     .finish();
 
-    let app = Router::new().route("/", get(graphiql).post_service(GraphQL::new(schema)));
+    let app = Router::new().route("/api", get(graphiql).post_service(GraphQL::new(schema)));
 
     axum::serve(TcpListener::bind("0.0.0.0:8000").await.unwrap(), app)
         .await
