@@ -20,7 +20,7 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
 
-  clippy:
+  lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -30,3 +30,25 @@ jobs:
         components: clippy
     - name: Run clippy
       run: cargo clippy --all-targets --all-features -- -D warnings
+
+  deploy:
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - lint
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SOURCE: "."
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: ${{ secrets.REMOTE_TARGET }}
+          SCRIPT_AFTER: |
+            cd ${{ secrets.REMOTE_TARGET }}
+            cp .env.template .env
+            sed -i 's/@DATABASE_URL@/${{ secrets.DATABASE_URL }}/g' .env
+            docker compose up -d --build

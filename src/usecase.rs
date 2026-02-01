@@ -2,6 +2,7 @@ use mockall::automock;
 
 #[automock]
 pub trait PasswordHasher {
+    #[expect(clippy::result_unit_err)]
     fn hash_password(&self, password: &str) -> Result<String, ()>;
 }
 
