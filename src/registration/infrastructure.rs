@@ -3,8 +3,8 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHasher as _, SaltString, rand_core::OsRng},
 };
-
 use crate::registration::application::PasswordHasher;
+use sqlx::PgPool;
 
 pub struct Argon2PasswordHasher;
 
@@ -30,8 +30,6 @@ impl PasswordHasher for Argon2PasswordHasher {
             .to_string())
     }
 }
-
-use sqlx::PgPool;
 
 pub struct PostgresUserRepository {
     pool: PgPool,

@@ -1,9 +1,6 @@
-use async_graphql::{Context, InputObject, Object, Result, SimpleObject};
+use async_graphql::{MergedObject, SimpleObject};
 
-use crate::registration::{
-    application::RegistrationUsecase,
-    infrastructure::{Argon2PasswordHasher, PostgresUserRepository},
-};
+use crate::registration::presentation::RegistrationMutation;
 
 #[derive(SimpleObject)]
 pub struct QueryRoot {
@@ -16,28 +13,11 @@ impl QueryRoot {
     }
 }
 
-pub struct MutationRoot;
+#[derive(MergedObject)]
+pub struct MutationRoot(RegistrationMutation);
 
 impl MutationRoot {
-    pub fn new() -> Self {
-        Self
-    }
-}
-
-#[derive(InputObject)]
-struct CreateAccountInput {
-    username: String,
-    password: String,
-}
-
-#[Object]
-impl MutationRoot {
-    async fn create_account(&self, ctx: &Context<'_>, input: CreateAccountInput) -> Result<i64> {
-        let res = ctx
-            .data::<RegistrationUsecase<Argon2PasswordHasher, PostgresUserRepository>>()?
-            .register(&input.username, &input.password)
-            .await
-            .map_err(|_| "failed to register user")?;
-        Ok(res)
+    pub fn new(registration: RegistrationMutation) -> Self {
+        Self(registration)
     }
 }

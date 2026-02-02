@@ -4,10 +4,8 @@ use async_graphql::{EmptySubscription, Schema, http::GraphiQLSource};
 use async_graphql_axum::GraphQL;
 use axum::{Router, response::{self, IntoResponse}, routing::get};
 use server::{
-    registration::infrastructure::Argon2PasswordHasher,
-    registration::infrastructure::PostgresUserRepository,
+    registration::{application::RegistrationUsecase, infrastructure::{Argon2PasswordHasher, PostgresUserRepository}, presentation::RegistrationMutation},
     schema::{MutationRoot, QueryRoot},
-    registration::application::RegistrationUsecase,
 };
 use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
@@ -32,7 +30,7 @@ async fn main() {
     let registration_usecase = RegistrationUsecase::new(hasher, user_repository);
     let schema = Schema::build(
         QueryRoot::new(123),
-        MutationRoot::new(),
+        MutationRoot::new(RegistrationMutation::new()),
         EmptySubscription,
     )
     .data(registration_usecase)
