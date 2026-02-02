@@ -1,4 +1,2 @@
-pub mod repository;
-pub mod usecase;
-pub mod hasher;
+pub mod registration;
 pub mod schema;

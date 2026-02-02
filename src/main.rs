@@ -4,10 +4,10 @@ use async_graphql::{EmptySubscription, Schema, http::GraphiQLSource};
 use async_graphql_axum::GraphQL;
 use axum::{Router, response::{self, IntoResponse}, routing::get};
 use server::{
-    hasher::Argon2PasswordHasher,
-    repository::PostgresUserRepository,
-    schema::{AppContext, MutationRoot, QueryRoot},
-    usecase::RegistrationUsecase,
+    registration::infrastructure::Argon2PasswordHasher,
+    registration::infrastructure::PostgresUserRepository,
+    schema::{MutationRoot, QueryRoot},
+    registration::application::RegistrationUsecase,
 };
 use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
@@ -24,17 +24,18 @@ async fn main() {
         .connect(&connection_string)
         .await
         .expect("failed to connect to postgres");
+
     sqlx::migrate!("./migrations").run(&pool).await.expect("Migrations failed");
+
     let hasher = Argon2PasswordHasher::new();
     let user_repository = PostgresUserRepository::new(pool);
     let registration_usecase = RegistrationUsecase::new(hasher, user_repository);
-    let context = AppContext::new(registration_usecase);
     let schema = Schema::build(
         QueryRoot::new(123),
-        MutationRoot::<Argon2PasswordHasher, PostgresUserRepository>::new(),
+        MutationRoot::new(),
         EmptySubscription,
     )
-    .data(context)
+    .data(registration_usecase)
     .finish();
 
     let app = Router::new().route("/api", get(graphiql).post_service(GraphQL::new(schema)));

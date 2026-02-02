@@ -1,12 +1,9 @@
-use std::marker::PhantomData;
-
 use async_graphql::{Context, InputObject, Object, Result, SimpleObject};
 
-use crate::usecase::{PasswordHasher, RegistrationUsecase, UserRepository};
-
-pub struct AppContext<P: PasswordHasher, U: UserRepository> {
-    registration: RegistrationUsecase<P, U>,
-}
+use crate::registration::{
+    application::RegistrationUsecase,
+    infrastructure::{Argon2PasswordHasher, PostgresUserRepository},
+};
 
 #[derive(SimpleObject)]
 pub struct QueryRoot {
@@ -15,35 +12,15 @@ pub struct QueryRoot {
 
 impl QueryRoot {
     pub fn new(id: i32) -> Self {
-        Self {
-            id
-        }
+        Self { id }
     }
 }
 
-impl<P: PasswordHasher, U: UserRepository> AppContext<P, U> {
-    pub fn new(registration: RegistrationUsecase<P, U>) -> Self {
-        Self { registration }
-    }
-}
+pub struct MutationRoot;
 
-pub struct MutationRoot<P, U> {
-    phantom_hasher: PhantomData<P>,
-    phantom_user_repository: PhantomData<U>,
-}
-
-impl<P, U> Default for MutationRoot<P, U> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl<P, U> MutationRoot<P, U> {
+impl MutationRoot {
     pub fn new() -> Self {
-        Self {
-            phantom_hasher: PhantomData,
-            phantom_user_repository: PhantomData,
-        }
+        Self
     }
 }
 
@@ -54,13 +31,10 @@ struct CreateAccountInput {
 }
 
 #[Object]
-impl<P: PasswordHasher + Send + Sync + 'static, U: UserRepository + Send + Sync + 'static>
-    MutationRoot<P, U>
-{
+impl MutationRoot {
     async fn create_account(&self, ctx: &Context<'_>, input: CreateAccountInput) -> Result<i64> {
         let res = ctx
-            .data::<AppContext<P, U>>()?
-            .registration
+            .data::<RegistrationUsecase<Argon2PasswordHasher, PostgresUserRepository>>()?
             .register(&input.username, &input.password)
             .await
             .map_err(|_| "failed to register user")?;

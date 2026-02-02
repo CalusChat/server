@@ -7,7 +7,7 @@ pub trait PasswordHasher {
 }
 
 #[automock]
-pub trait UserRepository {
+pub trait CreateUserRepository {
     fn create_user(
         &self,
         username: &str,
@@ -15,12 +15,12 @@ pub trait UserRepository {
     ) -> impl std::future::Future<Output = Result<i64, ()>> + Send;
 }
 
-pub struct RegistrationUsecase<P: PasswordHasher, U: UserRepository> {
+pub struct RegistrationUsecase<P: PasswordHasher, U: CreateUserRepository> {
     password_hasher: P,
     user_repository: U,
 }
 
-impl<P: PasswordHasher, U: UserRepository> RegistrationUsecase<P, U> {
+impl<P: PasswordHasher, U: CreateUserRepository> RegistrationUsecase<P, U> {
     pub fn new(password_hasher: P, user_repository: U) -> Self {
         Self {
             password_hasher,
@@ -48,7 +48,7 @@ mod tests {
             .withf(|password| password == "12345")
             .returning(|_| Ok("hashed_password".to_string()));
 
-        let mut mock_repo = MockUserRepository::new();
+        let mut mock_repo = MockCreateUserRepository::new();
         mock_repo
             .expect_create_user()
             .withf(|username, hashed_password| {
