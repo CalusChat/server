@@ -13,6 +13,12 @@ struct CreateAccountInput {
 
 pub struct RegistrationMutation;
 
+impl Default for RegistrationMutation {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RegistrationMutation {
     pub fn new() -> Self {
         Self
